@@ -17,12 +17,12 @@ struct ball_t
   coordinate_t vel;
 }
 
-void draw_ball(ball_t p, uint8_t size)
+void draw_ball(ball_t *p, uint8_t size)
 {
   // Temporary ball using rectangle
   fillrect(
-      p.pos.x,      p.pos.y,
-      p.pos.x+size, p.pos.y+size,
+      p->pos.x,      p->pos.y,
+      p->pos.x+size, p->pos.y+size,
       white
       );
 }
@@ -46,7 +46,7 @@ int main(int argc,char** argv)
 
     // Draw to back buffer
     fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
-    draw_ball(ball_par, size);
+    draw_ball(&ball_par, size);
 
     // Flip buffer
     render_flip_buffer();
