@@ -25,6 +25,10 @@ void draw_ball(ball_t *p, uint8_t size)
       p->pos.x+size, p->pos.y+size,
       white
       );
+
+  // Update next position
+  p->pos.x += p->vel.x;
+  p->pos.y += p->vel.y;
 }
 
 int main(int argc,char** argv)
@@ -39,11 +43,12 @@ int main(int argc,char** argv)
   // Reset screen with ORANGE 
   fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
 
+  // Initialize ball parameter
+  ball_par.pos = {50, 50};
+  ball_par.vel = {2, 2};
+
   while (true)
   {
-    // Update position
-    ball_par.pos = {50, 50};
-
     // Draw to back buffer
     fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
     draw_ball(&ball_par, size);
