@@ -1,0 +1,12 @@
+*.ash
+*.bin
+*.data
+*.elf
+*.fun
+*.map
+*.nc
+*.ramfile
+*.swo
+*.swp
+*.xmd
+*~
