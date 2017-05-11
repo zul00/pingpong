@@ -10,19 +10,26 @@
 #include <stdlib.h>
 #include <helix.h>
 
-void draw_ball(coordinate_t p, uint8_t size)
+
+struct ball_t
+{
+  coordinate_t pos;
+  coordinate_t vel;
+}
+
+void draw_ball(ball_t p, uint8_t size)
 {
   // Temporary ball using rectangle
   fillrect(
-      p.x, p.y,
-      p.x+size, p.y+size,
+      p.pos.x,      p.pos.y,
+      p.pos.x+size, p.pos.y+size,
       white
       );
 }
 
 int main(int argc,char** argv)
 {
-  coordinate_t pos = {0,0}; // x,y position
+  ball_t ball_par = {0,0,0,0};  // x,y position, x,y velocity
   const uint8_t size = 20;
 
   printf("Pingpong...\n");
@@ -35,11 +42,11 @@ int main(int argc,char** argv)
   while (true)
   {
     // Update position
-    pos = {50, 50};
+    ball_par.pos = {50, 50};
 
     // Draw to back buffer
     fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
-    draw_ball(pos, size);
+    draw_ball(ball_par, size);
 
     // Flip buffer
     render_flip_buffer();
