@@ -23,8 +23,8 @@ CFifo<bool,CFifo<>::r> *rd;
 
 struct vel_t
 {
-    int16_t x;
-    int16_t y;
+  int16_t x;
+  int16_t y;
 };
 
 // Ball parameter
@@ -81,21 +81,21 @@ void update_ball(ball_t *p)
  */
 void draw_ball(ball_t *p, uint8_t size)
 {
-    // Temporary ball using 4 point as rectangle
-    coordinate_t points[8]={
-        {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y)},         // atas
-        {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+size/5)},
-        {(coord_t)(p->pos.x),           (coord_t)(p->pos.y+size/2)},  // kiri
-        {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+4*size/5)},
-        {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y+size)},    // bawah
-        {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+4*size/5)},
-        {(coord_t)(p->pos.x+size),      (coord_t)(p->pos.y+size/2)},   // kanan
-        {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+size/5)}
-    };
+  // Temporary ball using 4 point as rectangle
+  coordinate_t points[8]={
+    {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y)},         // atas
+    {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+size/5)},
+    {(coord_t)(p->pos.x),           (coord_t)(p->pos.y+size/2)},  // kiri
+    {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+4*size/5)},
+    {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y+size)},    // bawah
+    {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+4*size/5)},
+    {(coord_t)(p->pos.x+size),      (coord_t)(p->pos.y+size/2)},   // kanan
+    {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+size/5)}
+  };
 
-    poly_t<8> poly(points);
+  poly_t<8> poly(points);
 
-    fillpoly(poly,p->color,255);
+  fillpoly(poly,p->color,255);
 }
 
 
@@ -128,7 +128,7 @@ void *update(void *arg)
       update_ball(&(ball[idx]));
       draw_ball(&(ball[idx]), size);
     }
- 
+
     // Flip buffer
     render_flip_buffer();
 
