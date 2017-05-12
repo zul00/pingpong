@@ -11,6 +11,7 @@
 #include <helix.h>
 
 #define V_MAX   20
+#define N_BALL  4
 
 
 struct ball_t
@@ -75,8 +76,10 @@ void draw_ball(ball_t *p, uint8_t size)
 int main(int argc,char** argv)
 {
   ball_t ball_par = {0,0,0,0};  // x,y position, x,y velocity
+  ball_t ball[N_BALL];
   const uint8_t size = 20;
   time_t t;
+  uint8_t idx = 0;
 
   printf("Pingpong...\n");
 
@@ -90,16 +93,20 @@ int main(int argc,char** argv)
   fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
 
   // Initialize ball parameter
-  //ball_par.pos = {50, 50};
-  //ball_par.vel = {2, 2};
-  generate_ball(&ball_par);
+  for (idx=0;idx<N_BALL;idx++)
+  {
+    generate_ball(&(ball_par[idx]));
+  }
 
   while (true)
   {
     // Draw to back buffer
     fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
-    update_ball(&ball_par);
-    draw_ball(&ball_par, size);
+    for (idx=0;idx<N_BALL;idx++)
+    {
+      update_ball(&(ball_par[idx]));
+      draw_ball(&(ball_par[idx]), size);
+    }
 
     // Flip buffer
     render_flip_buffer();
