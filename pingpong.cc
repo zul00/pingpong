@@ -10,11 +10,26 @@
 #include <stdlib.h>
 #include <helix.h>
 
+#define V_MAX   20
+
 
 struct ball_t
 {
   coordinate_t pos;
   int16_t vel;
+}
+
+/**
+ * @brief Generate random ball parameter
+ * @param p   ball parameter
+ * @return None
+ */
+void generate_ball(ball_t *p)
+{
+  p->pox.x = rand() % DVI_WIDTH;
+  p->pox.y = rand() % DVI_HEIGHT;
+  p->vel.x = (rand() % 2*V_MAX) - V_MAX;
+  p->vel.y = (rand() % 2*V_MAX) - V_MAX;
 }
 
 /**
@@ -61,17 +76,23 @@ int main(int argc,char** argv)
 {
   ball_t ball_par = {0,0,0,0};  // x,y position, x,y velocity
   const uint8_t size = 20;
+  time_t t;
 
   printf("Pingpong...\n");
 
+  // Initialize random generator
+  srand((unsigned) time(&t));
+
+  // Init render
   render_init(1);
 
   // Reset screen with ORANGE 
   fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
 
   // Initialize ball parameter
-  ball_par.pos = {50, 50};
-  ball_par.vel = {2, 2};
+  //ball_par.pos = {50, 50};
+  //ball_par.vel = {2, 2};
+  generate_ball(&ball_par);
 
   while (true)
   {
