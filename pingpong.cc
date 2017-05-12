@@ -18,6 +18,7 @@ struct ball_t
 {
   coordinate_t pos;
   int16_t vel;
+  color_t color;
 }
 
 /**
@@ -31,6 +32,7 @@ void generate_ball(ball_t *p)
   p->pox.y = rand() % DVI_HEIGHT;
   p->vel.x = (rand() % 2*V_MAX) - V_MAX;
   p->vel.y = (rand() % 2*V_MAX) - V_MAX;
+  p->color = PIX_CONST(rand()%255, rand()%255, rand()%255);
 }
 
 /**
@@ -69,7 +71,7 @@ void draw_ball(ball_t *p, uint8_t size)
   fillrect(
       p->pos.x,      p->pos.y,
       p->pos.x+size, p->pos.y+size,
-      white
+      p->color 
       );
 }
 
