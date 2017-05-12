@@ -9,17 +9,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <helix.h>
+#include <time.h>
 
 #define V_MAX   20
 #define N_BALL  4
 
+struct vel_t
+{
+    int16_t x;
+    int16_t y;
+};
 
 struct ball_t
 {
   coordinate_t pos;
-  int16_t vel;
+  vel_t vel;
   color_t color;
-}
+};
 
 /**
  * @brief Generate random ball parameter
@@ -28,8 +34,8 @@ struct ball_t
  */
 void generate_ball(ball_t *p)
 {
-  p->pox.x = rand() % DVI_WIDTH;
-  p->pox.y = rand() % DVI_HEIGHT;
+  p->pos.x = rand() % DVI_WIDTH;
+  p->pos.y = rand() % DVI_HEIGHT;
   p->vel.x = (rand() % 2*V_MAX) - V_MAX;
   p->vel.y = (rand() % 2*V_MAX) - V_MAX;
   p->color = PIX_CONST(rand()%255, rand()%255, rand()%255);
@@ -68,20 +74,25 @@ void update_ball(ball_t *p)
 void draw_ball(ball_t *p, uint8_t size)
 {
   // Temporary ball using 4 point as rectangle
-  coordinate_t point[4]={
-    {(coord_t)(p->pos.x),       (coord_t)(p->pos.y)},
-    {(coord_t)(p->pos.x),       (coord_t)(p->pos.y+size)},
-    {(coord_t)(p->pos.x+size),  (coord_t)(p->pos.y)},
-    {(coord_t)(p->pos.x+size),  (coord_t)(p->pos.y+size)}};
+  //coordinate_t point[4]={
+  //  {(coord_t)(p->pos.x),       (coord_t)(p->pos.y)},
+  //  {(coord_t)(p->pos.x),       (coord_t)(p->pos.y+size)},
+  //  {(coord_t)(p->pos.x+size),  (coord_t)(p->pos.y)},
+  //  {(coord_t)(p->pos.x+size),  (coord_t)(p->pos.y+size)}};
 
-  poly_t<4> poly(p);
+  //poly_t<4> poly(p);
 
-  fillpoly(poly,p->color,255);
+  //fillpoly(poly,p->color,255);
+  // Temporary ball using rectangle
+  fillrect(
+      p->pos.x,      p->pos.y,
+      p->pos.x+size, p->pos.y+size,
+      p->color 
+      );
 }
 
 int main(int argc,char** argv)
 {
-  ball_t ball_par = {0,0,0,0};  // x,y position, x,y velocity
   ball_t ball[N_BALL];
   const uint8_t size = 20;
   time_t t;
@@ -96,22 +107,22 @@ int main(int argc,char** argv)
   render_init(1);
 
   // Reset screen with ORANGE 
-  fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
+  fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
 
   // Initialize ball parameter
   for (idx=0;idx<N_BALL;idx++)
   {
-    generate_ball(&(ball_par[idx]));
+    generate_ball(&(ball[idx]));
   }
 
   while (true)
   {
     // Draw to back buffer
-    fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
+    fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
     for (idx=0;idx<N_BALL;idx++)
     {
-      update_ball(&(ball_par[idx]));
-      draw_ball(&(ball_par[idx]), size);
+      update_ball(&(ball[idx]));
+      draw_ball(&(ball[idx]), size);
     }
 
     // Flip buffer
