@@ -17,15 +17,13 @@ struct ball_t
   int16_t vel;
 }
 
-void draw_ball(ball_t *p, uint8_t size)
+/**
+ * @brief Update ball parameter
+ * @param p   ball parameter
+ * @return None
+ */
+void update_ball(ball_t *p)
 {
-  // Temporary ball using rectangle
-  fillrect(
-      p->pos.x,      p->pos.y,
-      p->pos.x+size, p->pos.y+size,
-      white
-      );
-
   // Update next position
   p->pos.x += p->vel.x;
   p->pos.y += p->vel.y;
@@ -41,6 +39,22 @@ void draw_ball(ball_t *p, uint8_t size)
     p->vel.y *= -1;
     p->pos.y += p->vel.y;
   }
+}
+
+/**
+ * @brief Draw ball
+ * @param p     ball parameter
+ * @param size  size of ball
+ * @return None
+ */
+void draw_ball(ball_t *p, uint8_t size)
+{
+  // Temporary ball using rectangle
+  fillrect(
+      p->pos.x,      p->pos.y,
+      p->pos.x+size, p->pos.y+size,
+      white
+      );
 }
 
 int main(int argc,char** argv)
@@ -63,6 +77,7 @@ int main(int argc,char** argv)
   {
     // Draw to back buffer
     fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
+    update_ball(&ball_par);
     draw_ball(&ball_par, size);
 
     // Flip buffer
