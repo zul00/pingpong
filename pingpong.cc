@@ -14,7 +14,7 @@
 struct ball_t
 {
   coordinate_t pos;
-  coordinate_t vel;
+  int16_t vel;
 }
 
 void draw_ball(ball_t *p, uint8_t size)
@@ -29,6 +29,18 @@ void draw_ball(ball_t *p, uint8_t size)
   // Update next position
   p->pos.x += p->vel.x;
   p->pos.y += p->vel.y;
+
+  // Limit on the edge of the screen
+  if (p->pos.x > DVI_WIDTH)   // pos is unsigned, negative position will
+  {                           // be >> DVI_WIDTH
+    p->vel.x *= -1;
+    p->pos.x += p->vel.x;
+  }
+  if (p->pos.y > DVI_HEIGHT)  // pos is unsigned, negative position will
+  {                           // be >> DVI_HEIGHT
+    p->vel.y *= -1;
+    p->pos.y += p->vel.y;
+  }
 }
 
 int main(int argc,char** argv)
