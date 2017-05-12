@@ -12,12 +12,21 @@
 
 #define V_MAX   20
 
+#define ERREXIT(str) {fprintf(stderr, "Error: " str "\n"); exit(1);}
+#define ERREXIT2(str, ...) {fprintf(stderr, "Error: " str "\n", __VA_ARGS__); exit(1);}
 
+// Head and Tail
+CFifo<bool,CFifo<>::w> *wr;
+CFifo<bool,CFifo<>::r> *rd;
+
+// Ball parameter
 struct ball_t
 {
   coordinate_t pos;
   int16_t vel;
 }
+ball_t ball_par = {0,0,0,0};  // x,y position, x,y velocity
+const uint8_t size = 20;
 
 /**
  * @brief Generate random ball parameter
@@ -72,42 +81,95 @@ void draw_ball(ball_t *p, uint8_t size)
       );
 }
 
-int main(int argc,char** argv)
+
+/* ====Multiprocess==== */
+void *update(void *arg) 
 {
-  ball_t ball_par = {0,0,0,0};  // x,y position, x,y velocity
-  const uint8_t size = 20;
-  time_t t;
-
-  printf("Pingpong...\n");
-
   // Initialize random generator
   srand((unsigned) time(&t));
 
+  // Initialize ball parameter
+  generate_ball(&ball_par);
+
+  // Check FIFO
+  wr->validate();
+
+  while(1) 
+  {
+    update_ball(&ball_par);
+
+    printf("Ping\n");
+    wr->push(true);
+
+    sleep(1);
+  }
+  return NULL;
+}
+
+void *render(void *arg) 
+{
   // Init render
   render_init(1);
 
   // Reset screen with ORANGE 
   fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
+  render_flip_buffer();
 
-  // Initialize ball parameter
-  //ball_par.pos = {50, 50};
-  //ball_par.vel = {2, 2};
-  generate_ball(&ball_par);
+  // Check FIFO
+  rd->validate();
 
   while (true)
   {
+    rd->pop();
+
     // Draw to back buffer
     fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
-    update_ball(&ball_par);
     draw_ball(&ball_par, size);
 
     // Flip buffer
     render_flip_buffer();
 
-    sleep(1);
+    printf("\tPong\n");
+    wr->push(true);
   }
 
   render_destroy();
+
+  return NULL;
+}
+
+int main(int argc,char** argv)
+{
+  time_t t;
+  pid_t pid0, pid1;
+
+  printf("Pingpong...\n");
+
+  // Prepare FIFO
+  CFifoPtr<bool> fifo12 = CFifo<bool>::Create(1, wr, 2, rd, 2);
+  if(!fifo12.valid()) ERREXIT("Error creating buffer");
+
+  // Create process
+  if(int e=CreateProcess(pid0, update, NULL, PROC_DEFAULT_TIMESLICE,
+        PROC_DEFAULT_STACK, 1))
+    ERREXIT2("Process creation failed: %i", e);
+  if(int e=CreateProcess(pid1, render, NULL, PROC_DEFAULT_TIMESLICE,
+        PROC_DEFAULT_STACK, 2))
+    ERREXIT2("Process creation failed: %i", e);
+
+  // Set process flag
+  if(int e=SetProcessFlags(pid0, PROC_FLAG_JOINABLE, 1))
+    ERREXIT2("While setting process flags: %i", e);
+  if(int e=SetProcessFlags(pid1, PROC_FLAG_JOINABLE, 2))
+    ERREXIT2("While setting process flags: %i", e);
+
+  // Start process
+  if(int e=StartProcess(pid0, 1)) ERREXIT2("Could not start ping: %i", e);
+  if(int e=StartProcess(pid1, 2)) ERREXIT2("Could not start pong: %i", e);
+
+  // FIFOs are destroyed when the pointers goes out of scope
+  if(int e=WaitProcess(pid0, NULL, 1)) ERREXIT2("Waiting on update %i@%i: %i\n", pid0, 1, e);
+  if(int e=WaitProcess(pid1, NULL, 2)) ERREXIT2("Waiting on render %i@%i: %i\n", pid1, 2, e);
 
   printf("All done.\n");
   return 0;
