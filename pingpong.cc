@@ -74,14 +74,18 @@ void update_ball(ball_t *p)
 void draw_ball(ball_t *p, uint8_t size)
 {
     // Temporary ball using 4 point as rectangle
-    coordinate_t points[4]={
-        {(coord_t)(p->pos.x),       (coord_t)(p->pos.y)},
-        {(coord_t)(p->pos.x),       (coord_t)(p->pos.y+size)},
-        {(coord_t)(p->pos.x+size),  (coord_t)(p->pos.y+size)},
-        {(coord_t)(p->pos.x+size),  (coord_t)(p->pos.y)}
+    coordinate_t points[8]={
+        {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y)},         // atas
+        {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+size/5)},
+        {(coord_t)(p->pos.x),           (coord_t)(p->pos.y+size/2)},  // kiri
+        {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+4*size/5)},
+        {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y+size)},    // bawah
+        {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+4*size/5)},
+        {(coord_t)(p->pos.x+size),      (coord_t)(p->pos.y+size/2)},   // kanan
+        {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+size/5)}
     };
 
-    poly_t<4> poly(points);
+    poly_t<8> poly(points);
 
     fillpoly(poly,p->color,255);
 }
