@@ -111,6 +111,7 @@ void *ping(void *arg)
 
   // Reset screen with ORANGE 
   fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
+  render_flip_buffer();
 
   // Initialize ball parameter
   for (idx=0;idx<N_BALL;idx++)
@@ -132,7 +133,7 @@ void *ping(void *arg)
     }
 
     // Flip buffer
-    render_flip_buffer();
+    //render_flip_buffer();
 
     printf("Ping\n");
     wr->push(true);
@@ -144,6 +145,16 @@ void *ping(void *arg)
 
 void *pong(void *arg) 
 {
+  ball_t ball[N_BALL];
+  const uint8_t size = 20;
+  uint8_t idx = 0;
+
+  // Initialize ball parameter
+  for (idx=0;idx<N_BALL;idx++)
+  {
+    generate_ball(&(ball[idx]));
+  }
+
   // Check FIFO
   rd->validate();
 
@@ -152,14 +163,16 @@ void *pong(void *arg)
     rd->pop();
 
     // Draw to back buffer
-    //fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, ORANGE);
-    //draw_ball(&ball_par, size);
+    for (idx=0;idx<N_BALL;idx++)
+    {
+      update_ball(&(ball[idx]));
+      draw_ball(&(ball[idx]), size);
+    }
 
     // Flip buffer
-    //render_flip_buffer();
+    render_flip_buffer();
 
     printf("\tPong\n");
-    //wr->push(true);
   }
 
   render_destroy();
