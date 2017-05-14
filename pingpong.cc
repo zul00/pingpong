@@ -91,13 +91,13 @@ void draw_ball(ball_t *p)
   // Approximate ball using 8 points
   coordinate_t points[8]={
     {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y)},         // top
-    {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+size/5)},
+    {(coord_t)(p->pos.x+size/6),    (coord_t)(p->pos.y+size/6)},
     {(coord_t)(p->pos.x),           (coord_t)(p->pos.y+size/2)},  // left
-    {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+4*size/5)},
+    {(coord_t)(p->pos.x+size/6),    (coord_t)(p->pos.y+5*size/6)},
     {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y+size)},    // bottom
-    {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+4*size/5)},
+    {(coord_t)(p->pos.x+5*size/6),  (coord_t)(p->pos.y+5*size/6)},
     {(coord_t)(p->pos.x+size),      (coord_t)(p->pos.y+size/2)},  // right
-    {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+size/5)}
+    {(coord_t)(p->pos.x+5*size/6),  (coord_t)(p->pos.y+size/6)}
   };
 
   poly_t<8> poly(points);
