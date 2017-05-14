@@ -64,13 +64,15 @@ void update_ball(ball_t *p)
   p->pos.y += p->vel.y;
 
   // Limit on the edge of the screen
-  if (p->pos.x > DVI_WIDTH)   // pos is unsigned, negative position will
-  {                           // be >> DVI_WIDTH
+  if (p->pos.x + p->size > DVI_WIDTH ||
+      p->pos.x < p->size)
+  { 
     p->vel.x *= -1;
     p->pos.x += p->vel.x;
   }
-  if (p->pos.y > DVI_HEIGHT)  // pos is unsigned, negative position will
-  {                           // be >> DVI_HEIGHT
+  if (p->pos.y + p->size > DVI_HEIGHT ||
+      p->pos.y < p->size)
+  {
     p->vel.y *= -1;
     p->pos.y += p->vel.y;
   }
