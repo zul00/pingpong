@@ -105,16 +105,12 @@ void *ping(void *arg)
   ball_t ball[N_BALL];
   const uint8_t size = 20;
   uint8_t idx = 0;
-  time_t t;
 
   // Init render 
   render_init(1);
 
   // Reset screen with ORANGE 
   fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
-
-  // Initialize random generator
-  srand((unsigned) time(&t));
 
   // Initialize ball parameter
   for (idx=0;idx<N_BALL;idx++)
@@ -174,8 +170,12 @@ void *pong(void *arg)
 int main(int argc,char** argv)
 {
   pid_t pid0, pid1;
+  time_t t;
 
   printf("Pingpong...\n");
+
+  // Initialize random generator
+  srand((unsigned) time(&t));
 
   // Prepare FIFO
   CFifoPtr<bool> fifo12 = CFifo<bool>::Create(1, wr, 2, rd, 2);
