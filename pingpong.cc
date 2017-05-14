@@ -13,6 +13,7 @@
 
 #define V_MAX   20
 #define N_BALL  4
+#define SIZE    20
 
 #define ERREXIT(str) {fprintf(stderr, "Error: " str "\n"); exit(1);}
 #define ERREXIT2(str, ...) {fprintf(stderr, "Error: " str "\n", __VA_ARGS__); exit(1);}
@@ -32,6 +33,7 @@ struct ball_t
 {
   coordinate_t pos;
   vel_t vel;
+  uint8_t size;
   color_t color;
 };
 
@@ -46,6 +48,7 @@ void generate_ball(ball_t *p)
   p->pos.y = rand() % DVI_HEIGHT;
   p->vel.x = (rand() % 2*V_MAX) - V_MAX;
   p->vel.y = (rand() % 2*V_MAX) - V_MAX;
+  p->size  = SIZE;
   p->color = PIX_CONST(rand()%255, rand()%255, rand()%255);
 }
 
@@ -79,17 +82,19 @@ void update_ball(ball_t *p)
  * @param size  size of ball
  * @return None
  */
-void draw_ball(ball_t *p, uint8_t size)
+void draw_ball(ball_t *p)
 {
-  // Temporary ball using 4 point as rectangle
+  uint8_t size = p->size;
+
+  // Approximate ball using 8 points
   coordinate_t points[8]={
-    {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y)},         // atas
+    {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y)},         // top
     {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+size/5)},
-    {(coord_t)(p->pos.x),           (coord_t)(p->pos.y+size/2)},  // kiri
+    {(coord_t)(p->pos.x),           (coord_t)(p->pos.y+size/2)},  // left
     {(coord_t)(p->pos.x+size/5),    (coord_t)(p->pos.y+4*size/5)},
-    {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y+size)},    // bawah
+    {(coord_t)(p->pos.x+size/2),    (coord_t)(p->pos.y+size)},    // bottom
     {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+4*size/5)},
-    {(coord_t)(p->pos.x+size),      (coord_t)(p->pos.y+size/2)},   // kanan
+    {(coord_t)(p->pos.x+size),      (coord_t)(p->pos.y+size/2)},  // right
     {(coord_t)(p->pos.x+4*size/5),  (coord_t)(p->pos.y+size/5)}
   };
 
@@ -103,7 +108,6 @@ void draw_ball(ball_t *p, uint8_t size)
 void *ping(void *arg) 
 {
   ball_t ball[N_BALL];
-  const uint8_t size = 20;
   uint8_t idx = 0;
 
   // Init render 
@@ -129,7 +133,7 @@ void *ping(void *arg)
     for (idx=0;idx<N_BALL;idx++)
     {
       update_ball(&(ball[idx]));
-      draw_ball(&(ball[idx]), size);
+      draw_ball(&(ball[idx]));
     }
 
     // Flip buffer
@@ -146,7 +150,6 @@ void *ping(void *arg)
 void *pong(void *arg) 
 {
   ball_t ball[N_BALL];
-  const uint8_t size = 20;
   uint8_t idx = 0;
 
   // Initialize ball parameter
@@ -166,7 +169,7 @@ void *pong(void *arg)
     for (idx=0;idx<N_BALL;idx++)
     {
       update_ball(&(ball[idx]));
-      draw_ball(&(ball[idx]), size);
+      draw_ball(&(ball[idx]));
     }
 
     // Flip buffer
