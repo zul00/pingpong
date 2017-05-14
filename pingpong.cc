@@ -141,7 +141,7 @@ void *ping(void *arg)
     // Flip buffer
     //render_flip_buffer();
 
-    printf("Ping\n");
+    printf("Ping, core=%u\n", GetProcID());
     wr->push(true);
 
     sleep(1);
@@ -177,7 +177,7 @@ void *pong(void *arg)
     // Flip buffer
     render_flip_buffer();
 
-    printf("\tPong\n");
+    printf("\tPong, core=%u\n", GetProcID());
   }
 
   render_destroy();
