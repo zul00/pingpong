@@ -100,7 +100,7 @@ void draw_ball(ball_t *p, uint8_t size)
 
 
 /* ====Multiprocess==== */
-void *update(void *arg) 
+void *ping(void *arg) 
 {
   ball_t ball[N_BALL];
   const uint8_t size = 20;
@@ -140,9 +140,9 @@ void *update(void *arg)
   return NULL;
 }
 
-void *render(void *arg) 
+void *pong(void *arg) 
 {
-  // Init render
+  // Init pong
   render_init(1);
 
   // Reset screen with ORANGE 
@@ -182,10 +182,10 @@ int main(int argc,char** argv)
   if(!fifo12.valid()) ERREXIT("Error creating buffer");
 
   // Create process
-  if(int e=CreateProcess(pid0, update, NULL, PROC_DEFAULT_TIMESLICE,
+  if(int e=CreateProcess(pid0, ping, NULL, PROC_DEFAULT_TIMESLICE,
         PROC_DEFAULT_STACK, 1))
     ERREXIT2("Process creation failed: %i", e);
-  if(int e=CreateProcess(pid1, render, NULL, PROC_DEFAULT_TIMESLICE,
+  if(int e=CreateProcess(pid1, pong, NULL, PROC_DEFAULT_TIMESLICE,
         PROC_DEFAULT_STACK, 2))
     ERREXIT2("Process creation failed: %i", e);
 
@@ -200,8 +200,8 @@ int main(int argc,char** argv)
   if(int e=StartProcess(pid1, 2)) ERREXIT2("Could not start pong: %i", e);
 
   // FIFOs are destroyed when the pointers goes out of scope
-  if(int e=WaitProcess(pid0, NULL, 1)) ERREXIT2("Waiting on update %i@%i: %i\n", pid0, 1, e);
-  if(int e=WaitProcess(pid1, NULL, 2)) ERREXIT2("Waiting on render %i@%i: %i\n", pid1, 2, e);
+  if(int e=WaitProcess(pid0, NULL, 1)) ERREXIT2("Waiting on ping %i@%i: %i\n", pid0, 1, e);
+  if(int e=WaitProcess(pid1, NULL, 2)) ERREXIT2("Waiting on pong %i@%i: %i\n", pid1, 2, e);
 
   printf("All done.\n");
   return 0;
