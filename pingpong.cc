@@ -107,6 +107,12 @@ void *ping(void *arg)
   uint8_t idx = 0;
   time_t t;
 
+  // Init render 
+  render_init(1);
+
+  // Reset screen with ORANGE 
+  fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
+
   // Initialize random generator
   srand((unsigned) time(&t));
 
@@ -142,12 +148,6 @@ void *ping(void *arg)
 
 void *pong(void *arg) 
 {
-  // Init pong
-  render_init(1);
-
-  // Reset screen with ORANGE 
-  fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
-
   // Check FIFO
   rd->validate();
 
