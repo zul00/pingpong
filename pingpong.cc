@@ -12,7 +12,7 @@
 #include <time.h>
 
 #define V_MAX   20
-#define N_BALL  2
+#define N_BALL  4
 #define SIZE    20
 
 #define ERREXIT(str) {fprintf(stderr, "Error: " str "\n"); exit(1);}
@@ -20,7 +20,9 @@
 
 // Head and Tail
 CFifo<bool,CFifo<>::w> *wr;
+CFifo<bool,CFifo<>::w> *wr2;
 CFifo<bool,CFifo<>::r> *rd;
+CFifo<bool,CFifo<>::r> *rd2;
 
 struct vel_t
 {
@@ -141,12 +143,14 @@ void *ping(void *arg)
       draw_ball(&(ball[idx]));
     }
 
+    render_flip_buffer();
+
     printf("Ping, ctr=%u, core=%u\n", ctr++, GetProcID());
     printf("pos%4u;%4u; ", ball[0].pos.x, ball[0].pos.y);
     printf("vel%4d;%4d\n", ball[0].vel.x, ball[0].vel.y);
     wr->push(true);
 
-    sleep(1);
+    sleep(0.02);
   }
   return NULL;
 }
@@ -168,6 +172,7 @@ void *pong(void *arg)
 
   // Check FIFO
   rd->validate();
+  wr2->validate();
 
   while (true)
   {
@@ -181,12 +186,54 @@ void *pong(void *arg)
     }
 
     // Flip buffer
-    render_flipnow();
+    render_flip_buffer();
 
     printf("\tPong, core=%u\n", GetProcID());
     printf("pos%4u;%4u; ", ball2[0].pos.x, ball2[0].pos.y);
     printf("vel%4d;%4d\n", ball2[0].vel.x, ball2[0].vel.y);
-    sleep(1);
+    wr2->push(true);
+  }
+
+  render_destroy();
+
+  return NULL;
+}
+
+void *bing(void *arg) 
+{
+  ball_t ball3[N_BALL];
+  uint8_t idx = 0;
+  time_t t;
+
+  // Initialize random generator
+  srand((unsigned) 3*time(&t));
+
+  // Initialize ball parameter
+  for (idx=0;idx<N_BALL;idx++)
+  {
+    generate_ball(&(ball3[idx]));
+  }
+
+  // Check FIFO
+  rd2->validate();
+
+  while (true)
+  {
+    rd2->pop();
+
+    // Draw to back buffer
+    for (idx=0;idx<N_BALL;idx++)
+    {
+      update_ball(&(ball3[idx]));
+      draw_ball(&(ball3[idx]));
+    }
+
+    // Flip buffer
+    render_flipnow();
+
+    printf("\t\tBing, core=%u\n", GetProcID());
+    printf("pos%4u;%4u; ", ball3[0].pos.x, ball3[0].pos.y);
+    printf("vel%4d;%4d\n", ball3[0].vel.x, ball3[0].vel.y);
   }
 
   render_destroy();
@@ -196,13 +243,15 @@ void *pong(void *arg)
 
 int main(int argc,char** argv)
 {
-  pid_t pid0, pid1;
+  pid_t pid0, pid1, pid2;
 
   printf("Pingpong...\n");
 
   // Prepare FIFO
   CFifoPtr<bool> fifo12 = CFifo<bool>::Create(1, wr, 2, rd, 2);
+  CFifoPtr<bool> fifo23 = CFifo<bool>::Create(2, wr2, 3, rd2, 2);
   if(!fifo12.valid()) ERREXIT("Error creating buffer");
+  if(!fifo23.valid()) ERREXIT("Error creating buffer");
 
   // Create process
   if(int e=CreateProcess(pid0, ping, NULL, PROC_DEFAULT_TIMESLICE,
@@ -211,20 +260,27 @@ int main(int argc,char** argv)
   if(int e=CreateProcess(pid1, pong, NULL, PROC_DEFAULT_TIMESLICE,
         PROC_DEFAULT_STACK, 2))
     ERREXIT2("Process creation failed: %i", e);
+  if(int e=CreateProcess(pid2, bing, NULL, PROC_DEFAULT_TIMESLICE,
+        PROC_DEFAULT_STACK, 3))
+    ERREXIT2("Process creation failed: %i", e);
 
   // Set process flag
   if(int e=SetProcessFlags(pid0, PROC_FLAG_JOINABLE, 1))
     ERREXIT2("While setting process flags: %i", e);
   if(int e=SetProcessFlags(pid1, PROC_FLAG_JOINABLE, 2))
     ERREXIT2("While setting process flags: %i", e);
+  if(int e=SetProcessFlags(pid2, PROC_FLAG_JOINABLE, 3))
+    ERREXIT2("While setting process flags: %i", e);
 
   // Start process
   if(int e=StartProcess(pid0, 1)) ERREXIT2("Could not start ping: %i", e);
   if(int e=StartProcess(pid1, 2)) ERREXIT2("Could not start pong: %i", e);
+  if(int e=StartProcess(pid2, 3)) ERREXIT2("Could not start bing: %i", e);
 
   // FIFOs are destroyed when the pointers goes out of scope
   if(int e=WaitProcess(pid0, NULL, 1)) ERREXIT2("Waiting on ping %i@%i: %i\n", pid0, 1, e);
   if(int e=WaitProcess(pid1, NULL, 2)) ERREXIT2("Waiting on pong %i@%i: %i\n", pid1, 2, e);
+  if(int e=WaitProcess(pid2, NULL, 3)) ERREXIT2("Waiting on bing %i@%i: %i\n", pid2, 3, e);
 
   printf("All done.\n");
   return 0;
