@@ -12,7 +12,7 @@
 #include <time.h>
 
 #define V_MAX   20
-#define N_BALL  1
+#define N_BALL  2
 #define SIZE    20
 
 #define ERREXIT(str) {fprintf(stderr, "Error: " str "\n"); exit(1);}
@@ -64,14 +64,12 @@ void update_ball(ball_t *p)
   p->pos.y += p->vel.y;
 
   // Limit on the edge of the screen
-  if (p->pos.x + p->size > DVI_WIDTH ||
-      p->pos.x < p->size)
+  if (p->pos.x + p->size >= DVI_WIDTH)
   { 
     p->vel.x *= -1;
     p->pos.x += p->vel.x;
   }
-  if (p->pos.y + p->size > DVI_HEIGHT ||
-      p->pos.y < p->size)
+  if (p->pos.y + p->size >= DVI_HEIGHT)
   {
     p->vel.y *= -1;
     p->pos.y += p->vel.y;
