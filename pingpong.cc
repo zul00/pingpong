@@ -12,7 +12,7 @@
 #include <time.h>
 
 #define V_MAX   20
-#define N_BALL  4
+#define N_BALL  1
 #define SIZE    20
 
 #define ERREXIT(str) {fprintf(stderr, "Error: " str "\n"); exit(1);}
@@ -46,8 +46,8 @@ void generate_ball(ball_t *p)
 {
   p->pos.x = rand() % DVI_WIDTH;
   p->pos.y = rand() % DVI_HEIGHT;
-  p->vel.x = (rand() % 2*V_MAX) - V_MAX;
-  p->vel.y = (rand() % 2*V_MAX) - V_MAX;
+  p->vel.x = (rand() % (2*V_MAX) - V_MAX);
+  p->vel.y = (rand() % (2*V_MAX) - V_MAX);
   p->size  = SIZE;
   p->color = PIX_CONST(rand()%255, rand()%255, rand()%255);
 }
@@ -111,6 +111,8 @@ void *ping(void *arg)
 {
   ball_t ball[N_BALL];
   uint8_t idx = 0;
+  uint16_t ctr = 0;
+  time_t t;
 
   // Init render 
   render_init(1);
@@ -118,6 +120,9 @@ void *ping(void *arg)
   // Reset screen with ORANGE 
   fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
   render_flip_buffer();
+
+  // Initialize random generator
+  srand((unsigned) 1*time(&t));
 
   // Initialize ball parameter
   for (idx=0;idx<N_BALL;idx++)
@@ -138,10 +143,9 @@ void *ping(void *arg)
       draw_ball(&(ball[idx]));
     }
 
-    // Flip buffer
-    //render_flip_buffer();
-
-    printf("Ping, core=%u\n", GetProcID());
+    printf("Ping, ctr=%u, core=%u\n", ctr++, GetProcID());
+    printf("pos%4u;%4u; ", ball[0].pos.x, ball[0].pos.y);
+    printf("vel%4d;%4d\n", ball[0].vel.x, ball[0].vel.y);
     wr->push(true);
 
     sleep(1);
@@ -151,13 +155,17 @@ void *ping(void *arg)
 
 void *pong(void *arg) 
 {
-  ball_t ball[N_BALL];
+  ball_t ball2[N_BALL];
   uint8_t idx = 0;
+  time_t t;
+
+  // Initialize random generator
+  srand((unsigned) 2*time(&t));
 
   // Initialize ball parameter
   for (idx=0;idx<N_BALL;idx++)
   {
-    generate_ball(&(ball[idx]));
+    generate_ball(&(ball2[idx]));
   }
 
   // Check FIFO
@@ -170,14 +178,17 @@ void *pong(void *arg)
     // Draw to back buffer
     for (idx=0;idx<N_BALL;idx++)
     {
-      update_ball(&(ball[idx]));
-      draw_ball(&(ball[idx]));
+      update_ball(&(ball2[idx]));
+      draw_ball(&(ball2[idx]));
     }
 
     // Flip buffer
-    render_flip_buffer();
+    render_flipnow();
 
     printf("\tPong, core=%u\n", GetProcID());
+    printf("pos%4u;%4u; ", ball2[0].pos.x, ball2[0].pos.y);
+    printf("vel%4d;%4d\n", ball2[0].vel.x, ball2[0].vel.y);
+    sleep(1);
   }
 
   render_destroy();
@@ -188,12 +199,8 @@ void *pong(void *arg)
 int main(int argc,char** argv)
 {
   pid_t pid0, pid1;
-  time_t t;
 
   printf("Pingpong...\n");
-
-  // Initialize random generator
-  srand((unsigned) time(&t));
 
   // Prepare FIFO
   CFifoPtr<bool> fifo12 = CFifo<bool>::Create(1, wr, 2, rd, 2);
