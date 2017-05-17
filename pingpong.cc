@@ -150,7 +150,7 @@ void *ping(void *arg)
     printf("vel%4d;%4d\n", ball[0].vel.x, ball[0].vel.y);
     wr->push(true);
 
-    sleep(0.02);
+    usleep(800000);
   }
   return NULL;
 }
