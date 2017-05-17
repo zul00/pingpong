@@ -116,7 +116,7 @@ void *ping(void *arg)
   time_t t;
 
   // Init render 
-  render_init(1);
+  render_init(0);
 
   // Reset screen with ORANGE 
   fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
@@ -151,7 +151,7 @@ void *ping(void *arg)
     printf("vel%4d;%4d\n", ball[0].vel.x, ball[0].vel.y);
     wr1->push(true);
 
-    sleep(0.9);
+    usleep(800000);
   }
   return NULL;
 }
