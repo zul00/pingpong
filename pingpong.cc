@@ -13,6 +13,7 @@
 
 #define V_MAX   20
 #define N_BALL  4
+#define N_CORE  3
 #define SIZE    20
 
 #define ERREXIT(str) {fprintf(stderr, "Error: " str "\n"); exit(1);}
@@ -155,58 +156,58 @@ void *ping(void *arg)
   return NULL;
 }
 
+//void *pong(void *arg) 
+//{
+//  ball_t ball2[N_BALL];
+//  uint8_t idx = 0;
+//  time_t t;
+//
+//  // Initialize random generator
+//  srand((unsigned) 2*time(&t));
+//
+//  // Initialize ball parameter
+//  for (idx=0;idx<N_BALL;idx++)
+//  {
+//    generate_ball(&(ball2[idx]));
+//  }
+//
+//  // Check FIFO
+//  rd->validate();
+//  wr2->validate();
+//
+//  while (true)
+//  {
+//    rd->pop();
+//
+//    // Draw to back buffer
+//    for (idx=0;idx<N_BALL;idx++)
+//    {
+//      update_ball(&(ball2[idx]));
+//      draw_ball(&(ball2[idx]));
+//    }
+//
+//    // Flip buffer
+//    render_flip_buffer();
+//
+//    printf("\tPong, core=%u\n", GetProcID());
+//    printf("pos%4u;%4u; ", ball2[0].pos.x, ball2[0].pos.y);
+//    printf("vel%4d;%4d\n", ball2[0].vel.x, ball2[0].vel.y);
+//    wr2->push(true);
+//  }
+//
+//  render_destroy();
+//
+//  return NULL;
+//}
+
 void *pong(void *arg) 
-{
-  ball_t ball2[N_BALL];
-  uint8_t idx = 0;
-  time_t t;
-
-  // Initialize random generator
-  srand((unsigned) 2*time(&t));
-
-  // Initialize ball parameter
-  for (idx=0;idx<N_BALL;idx++)
-  {
-    generate_ball(&(ball2[idx]));
-  }
-
-  // Check FIFO
-  rd->validate();
-  wr2->validate();
-
-  while (true)
-  {
-    rd->pop();
-
-    // Draw to back buffer
-    for (idx=0;idx<N_BALL;idx++)
-    {
-      update_ball(&(ball2[idx]));
-      draw_ball(&(ball2[idx]));
-    }
-
-    // Flip buffer
-    render_flip_buffer();
-
-    printf("\tPong, core=%u\n", GetProcID());
-    printf("pos%4u;%4u; ", ball2[0].pos.x, ball2[0].pos.y);
-    printf("vel%4d;%4d\n", ball2[0].vel.x, ball2[0].vel.y);
-    wr2->push(true);
-  }
-
-  render_destroy();
-
-  return NULL;
-}
-
-void *bing(void *arg) 
 {
   ball_t ball3[N_BALL];
   uint8_t idx = 0;
   time_t t;
 
   // Initialize random generator
-  srand((unsigned) 3*time(&t));
+  srand((unsigned) GetProcID()*time(&t));
 
   // Initialize ball parameter
   for (idx=0;idx<N_BALL;idx++)
@@ -215,11 +216,32 @@ void *bing(void *arg)
   }
 
   // Check FIFO
-  rd2->validate();
+  switch (GetProcID())
+  {
+    case 2:
+      rd->validate();
+      wr2->validate();
+      break;
+    case N_CORE:
+      rd2->validate();
+      break;
+    default:
+      break;
+  }
 
   while (true)
   {
-    rd2->pop();
+    switch (GetProcID())
+    {
+      case 2:
+        rd->pop();
+        break;
+      case 3:
+        rd2->pop();
+        break;
+      default:
+        break;
+    }
 
     // Draw to back buffer
     for (idx=0;idx<N_BALL;idx++)
@@ -229,11 +251,27 @@ void *bing(void *arg)
     }
 
     // Flip buffer
-    render_flipnow();
+    if(GetProcID() == N_CORE)
+    {
+      render_flipnow();
+    }
+    else
+    {
+      render_flip_buffer();
+    }
 
     printf("\t\tBing, core=%u\n", GetProcID());
     printf("pos%4u;%4u; ", ball3[0].pos.x, ball3[0].pos.y);
     printf("vel%4d;%4d\n", ball3[0].vel.x, ball3[0].vel.y);
+
+    switch (GetProcID())
+    {
+      case 2:
+        wr2->push(true);
+        break;
+      default:
+        break;
+    }
   }
 
   render_destroy();
@@ -260,7 +298,7 @@ int main(int argc,char** argv)
   if(int e=CreateProcess(pid1, pong, NULL, PROC_DEFAULT_TIMESLICE,
         PROC_DEFAULT_STACK, 2))
     ERREXIT2("Process creation failed: %i", e);
-  if(int e=CreateProcess(pid2, bing, NULL, PROC_DEFAULT_TIMESLICE,
+  if(int e=CreateProcess(pid2, pong, NULL, PROC_DEFAULT_TIMESLICE,
         PROC_DEFAULT_STACK, 3))
     ERREXIT2("Process creation failed: %i", e);
 
