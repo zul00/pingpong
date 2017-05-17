@@ -237,7 +237,7 @@ void *pong(void *arg)
 
 int main(int argc,char** argv)
 {
-  pid_t pid0, pid1, pid2;
+  pid_t pid[N_CORE];
 
   printf("Pingpong...\n");
 
@@ -248,33 +248,33 @@ int main(int argc,char** argv)
   if(!fifo23.valid()) ERREXIT("Error creating buffer");
 
   // Create process
-  if(int e=CreateProcess(pid0, ping, NULL, PROC_DEFAULT_TIMESLICE,
+  if(int e=CreateProcess(pid[0], ping, NULL, PROC_DEFAULT_TIMESLICE,
         PROC_DEFAULT_STACK, 1))
     ERREXIT2("Process creation failed: %i", e);
-  if(int e=CreateProcess(pid1, pong, NULL, PROC_DEFAULT_TIMESLICE,
+  if(int e=CreateProcess(pid[1], pong, NULL, PROC_DEFAULT_TIMESLICE,
         PROC_DEFAULT_STACK, 2))
     ERREXIT2("Process creation failed: %i", e);
-  if(int e=CreateProcess(pid2, pong, NULL, PROC_DEFAULT_TIMESLICE,
+  if(int e=CreateProcess(pid[2], pong, NULL, PROC_DEFAULT_TIMESLICE,
         PROC_DEFAULT_STACK, 3))
     ERREXIT2("Process creation failed: %i", e);
 
   // Set process flag
-  if(int e=SetProcessFlags(pid0, PROC_FLAG_JOINABLE, 1))
+  if(int e=SetProcessFlags(pid[0], PROC_FLAG_JOINABLE, 1))
     ERREXIT2("While setting process flags: %i", e);
-  if(int e=SetProcessFlags(pid1, PROC_FLAG_JOINABLE, 2))
+  if(int e=SetProcessFlags(pid[1], PROC_FLAG_JOINABLE, 2))
     ERREXIT2("While setting process flags: %i", e);
-  if(int e=SetProcessFlags(pid2, PROC_FLAG_JOINABLE, 3))
+  if(int e=SetProcessFlags(pid[2], PROC_FLAG_JOINABLE, 3))
     ERREXIT2("While setting process flags: %i", e);
 
   // Start process
-  if(int e=StartProcess(pid0, 1)) ERREXIT2("Could not start ping: %i", e);
-  if(int e=StartProcess(pid1, 2)) ERREXIT2("Could not start pong: %i", e);
-  if(int e=StartProcess(pid2, 3)) ERREXIT2("Could not start bing: %i", e);
+  if(int e=StartProcess(pid[0], 1)) ERREXIT2("Could not start ping: %i", e);
+  if(int e=StartProcess(pid[1], 2)) ERREXIT2("Could not start pong: %i", e);
+  if(int e=StartProcess(pid[2], 3)) ERREXIT2("Could not start bing: %i", e);
 
   // FIFOs are destroyed when the pointers goes out of scope
-  if(int e=WaitProcess(pid0, NULL, 1)) ERREXIT2("Waiting on ping %i@%i: %i\n", pid0, 1, e);
-  if(int e=WaitProcess(pid1, NULL, 2)) ERREXIT2("Waiting on pong %i@%i: %i\n", pid1, 2, e);
-  if(int e=WaitProcess(pid2, NULL, 3)) ERREXIT2("Waiting on bing %i@%i: %i\n", pid2, 3, e);
+  if(int e=WaitProcess(pid[0], NULL, 1)) ERREXIT2("Waiting on ping %i@%i: %i\n", pid[0], 1, e);
+  if(int e=WaitProcess(pid[1], NULL, 2)) ERREXIT2("Waiting on pong %i@%i: %i\n", pid[1], 2, e);
+  if(int e=WaitProcess(pid[2], NULL, 3)) ERREXIT2("Waiting on bing %i@%i: %i\n", pid[2], 3, e);
 
   printf("All done.\n");
   return 0;
