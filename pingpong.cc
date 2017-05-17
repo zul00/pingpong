@@ -20,9 +20,9 @@
 #define ERREXIT2(str, ...) {fprintf(stderr, "Error: " str "\n", __VA_ARGS__); exit(1);}
 
 // Head and Tail
-CFifo<bool,CFifo<>::w> *wr;
+CFifo<bool,CFifo<>::w> *wr1;
 CFifo<bool,CFifo<>::w> *wr2;
-CFifo<bool,CFifo<>::r> *rd;
+CFifo<bool,CFifo<>::r> *rd1;
 CFifo<bool,CFifo<>::r> *rd2;
 
 struct vel_t
@@ -132,7 +132,7 @@ void *ping(void *arg)
   }
 
   // Check FIFO
-  wr->validate();
+  wr1->validate();
 
   while(1) 
   {
@@ -149,56 +149,12 @@ void *ping(void *arg)
     printf("Ping, ctr=%u, core=%u\n", ctr++, GetProcID());
     printf("pos%4u;%4u; ", ball[0].pos.x, ball[0].pos.y);
     printf("vel%4d;%4d\n", ball[0].vel.x, ball[0].vel.y);
-    wr->push(true);
+    wr1->push(true);
 
-    sleep(0.02);
+    sleep(0.9);
   }
   return NULL;
 }
-
-//void *pong(void *arg) 
-//{
-//  ball_t ball2[N_BALL];
-//  uint8_t idx = 0;
-//  time_t t;
-//
-//  // Initialize random generator
-//  srand((unsigned) 2*time(&t));
-//
-//  // Initialize ball parameter
-//  for (idx=0;idx<N_BALL;idx++)
-//  {
-//    generate_ball(&(ball2[idx]));
-//  }
-//
-//  // Check FIFO
-//  rd->validate();
-//  wr2->validate();
-//
-//  while (true)
-//  {
-//    rd->pop();
-//
-//    // Draw to back buffer
-//    for (idx=0;idx<N_BALL;idx++)
-//    {
-//      update_ball(&(ball2[idx]));
-//      draw_ball(&(ball2[idx]));
-//    }
-//
-//    // Flip buffer
-//    render_flip_buffer();
-//
-//    printf("\tPong, core=%u\n", GetProcID());
-//    printf("pos%4u;%4u; ", ball2[0].pos.x, ball2[0].pos.y);
-//    printf("vel%4d;%4d\n", ball2[0].vel.x, ball2[0].vel.y);
-//    wr2->push(true);
-//  }
-//
-//  render_destroy();
-//
-//  return NULL;
-//}
 
 void *pong(void *arg) 
 {
@@ -219,7 +175,7 @@ void *pong(void *arg)
   switch (GetProcID())
   {
     case 2:
-      rd->validate();
+      rd1->validate();
       wr2->validate();
       break;
     case N_CORE:
@@ -234,7 +190,7 @@ void *pong(void *arg)
     switch (GetProcID())
     {
       case 2:
-        rd->pop();
+        rd1->pop();
         break;
       case 3:
         rd2->pop();
@@ -286,7 +242,7 @@ int main(int argc,char** argv)
   printf("Pingpong...\n");
 
   // Prepare FIFO
-  CFifoPtr<bool> fifo12 = CFifo<bool>::Create(1, wr, 2, rd, 2);
+  CFifoPtr<bool> fifo12 = CFifo<bool>::Create(1, wr1, 2, rd1, 2);
   CFifoPtr<bool> fifo23 = CFifo<bool>::Create(2, wr2, 3, rd2, 2);
   if(!fifo12.valid()) ERREXIT("Error creating buffer");
   if(!fifo23.valid()) ERREXIT("Error creating buffer");
