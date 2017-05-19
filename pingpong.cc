@@ -12,7 +12,7 @@
 #include <time.h>
 
 #define V_MAX   20
-#define N_BALL  1
+#define N_BALL  10
 #define SIZE    20
 
 #define ERREXIT(str) {fprintf(stderr, "Error: " str "\n"); exit(1);}
@@ -139,18 +139,13 @@ void *ping(void *arg)
     for (idx=0;idx<N_BALL;idx++)
     {
       update_ball(&(ball[idx]));
+      bwr1->push(ball[idx]);
     }
-
-    //render_flip_buffer();
 
     printf("Ping, ctr=%u, core=%u; ", ctr++, GetProcID());
     printf("pos%4u;%4u; \n", ball[0].pos.x, ball[0].pos.y);
     //printf("vel%4d;%4d\n", ball[0].vel.x, ball[0].vel.y);
 
-    for (idx=0;idx<N_BALL;idx++)
-    {
-      bwr1->push(ball[idx]);
-    }
     wr->push(true);
 
     usleep(500000);
@@ -186,21 +181,14 @@ void *pong(void *arg)
     for (idx=0;idx<N_BALL;idx++)
     {
       update_ball(&(ball2[idx]));
+      bwr2->push(ball2[idx]);
     }
-
-    // Flip buffer
-    //render_flip_buffer();
 
     printf("\tPong, core=%u", GetProcID());
     printf("pos%4u;%4u; \n", ball2[0].pos.x, ball2[0].pos.y);
     //printf("vel%4d;%4d\n", ball2[0].vel.x, ball2[0].vel.y);
-    for (idx=0;idx<N_BALL;idx++)
-    {
-      bwr2->push(ball2[idx]);
-    }
+    
     wr2->push(true);
-
-    usleep(1000);
   }
 
   return NULL;
@@ -266,7 +254,6 @@ void *bing(void *arg)
 
     // Flip buffer
     render_flip_buffer();
-    usleep(1000);
 
     printf("\t\tBing, core=%u;", GetProcID());
     printf("ball1 = %4u; %4u;", ball1[0].pos.x, ball1[0].pos.y);
