@@ -146,7 +146,11 @@ void *ping(void *arg)
     printf("Ping, ctr=%u, core=%u; ", ctr++, GetProcID());
     printf("pos%4u;%4u; \n", ball[0].pos.x, ball[0].pos.y);
     //printf("vel%4d;%4d\n", ball[0].vel.x, ball[0].vel.y);
-    bwr1->push(ball[0]);
+
+    for (idx=0;idx<N_BALL;idx++)
+    {
+      bwr1->push(ball[idx]);
+    }
     wr->push(true);
 
     usleep(500000);
@@ -190,8 +194,11 @@ void *pong(void *arg)
     printf("\tPong, core=%u", GetProcID());
     printf("pos%4u;%4u; \n", ball2[0].pos.x, ball2[0].pos.y);
     //printf("vel%4d;%4d\n", ball2[0].vel.x, ball2[0].vel.y);
+    for (idx=0;idx<N_BALL;idx++)
+    {
+      bwr2->push(ball2[idx]);
+    }
     wr2->push(true);
-    bwr2->push(ball2[0]);
 
     usleep(1000);
   }
@@ -201,9 +208,10 @@ void *pong(void *arg)
 
 void *bing(void *arg) 
 {
+  ball_t ball1[N_BALL];
+  ball_t ball2[N_BALL];
   ball_t ball3[N_BALL];
-  ball_t ball1;
-  ball_t ball2;
+
   uint8_t idx = 0;
   time_t t;
   //timestamp_t ts;
@@ -234,18 +242,25 @@ void *bing(void *arg)
   while (true)
   {
     rd2->pop();
-    ball1 = brd1->front();
-    brd1->pop();
-    ball2 = brd2->front();
-    brd2->pop();
+    for (idx=0;idx<N_BALL;idx++)
+    {
+      ball1[idx] = brd1->front();
+      brd1->pop();
+    }
+
+    for (idx=0;idx<N_BALL;idx++)
+    {
+      ball2[idx] = brd2->front();
+      brd2->pop();
+    }
 
     // Draw to back buffer
     fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
     for (idx=0;idx<N_BALL;idx++)
     {
       update_ball(&(ball3[idx]));
-      draw_ball(&ball1);
-      draw_ball(&ball2);
+      draw_ball(&(ball1[idx]));
+      draw_ball(&(ball2[idx]));
       draw_ball(&(ball3[idx]));
     }
 
@@ -254,8 +269,8 @@ void *bing(void *arg)
     usleep(1000);
 
     printf("\t\tBing, core=%u;", GetProcID());
-    printf("ball1 = %4u; %4u;", ball1.pos.x, ball1.pos.y);
-    printf("ball2 = %4u; %4u\n\n", ball2.pos.x, ball2.pos.y);
+    printf("ball1 = %4u; %4u;", ball1[0].pos.x, ball1[0].pos.y);
+    printf("ball2 = %4u; %4u\n\n", ball2[0].pos.x, ball2[0].pos.y);
     //printf("pos%4u;%4u; ", ball3[0].pos.x, ball3[0].pos.y);
     //printf("vel%4d;%4d\n", ball3[0].vel.x, ball3[0].vel.y);
 
@@ -277,8 +292,8 @@ int main(int argc,char** argv)
   CFifoPtr<bool> fifo12 = CFifo<bool>::Create(1, wr, 2, rd, 2);
   CFifoPtr<bool> fifo23 = CFifo<bool>::Create(2, wr2, 3, rd2, 2);
 
-  CFifoPtr<ball_t> fifo_b13 = CFifo<ball_t>::Create(1, bwr1, 3, brd1, 2);
-  CFifoPtr<ball_t> fifo_b23 = CFifo<ball_t>::Create(2, bwr2, 3, brd2, 2);
+  CFifoPtr<ball_t> fifo_b13 = CFifo<ball_t>::Create(1, bwr1, 3, brd1, N_BALL);
+  CFifoPtr<ball_t> fifo_b23 = CFifo<ball_t>::Create(2, bwr2, 3, brd2, N_BALL);
 
   if(!fifo12.valid()) ERREXIT("Error creating buffer");
   if(!fifo23.valid()) ERREXIT("Error creating buffer");
