@@ -201,8 +201,9 @@ void *pong(void *arg)
     printf("\tPong, core=%u", GetProcID());
     printf("pos%4u;%4u; \n", ball2[0].pos.x, ball2[0].pos.y);
     //printf("vel%4d;%4d\n", ball2[0].vel.x, ball2[0].vel.y);
-    //bwr2->push(ball[0]);
     wr2->push(true);
+    bwr2->push(ball2[0]);
+
     usleep(1000);
   }
 
@@ -215,6 +216,7 @@ void *bing(void *arg)
 {
   ball_t ball3[N_BALL];
   ball_t ball1;
+  ball_t ball2;
   uint8_t idx = 0;
   time_t t;
   //timestamp_t ts;
@@ -232,17 +234,22 @@ void *bing(void *arg)
   // Check FIFO
   rd2->validate();
   brd1->validate();
+  brd2->validate();
 
   while (true)
   {
     rd2->pop();
     ball1 = brd1->front();
     brd1->pop();
+    ball2 = brd2->front();
+    brd2->pop();
 
     // Draw to back buffer
     for (idx=0;idx<N_BALL;idx++)
     {
       update_ball(&(ball3[idx]));
+      draw_ball(&ball1);
+      draw_ball(&ball2);
       draw_ball(&(ball3[idx]));
     }
 
@@ -251,7 +258,8 @@ void *bing(void *arg)
     usleep(1000);
 
     printf("\t\tBing, core=%u;", GetProcID());
-    printf("ball1 = %4u; %4u\n\n", ball1.pos.x, ball1.pos.y);
+    printf("ball1 = %4u; %4u;", ball1.pos.x, ball1.pos.y);
+    printf("ball2 = %4u; %4u\n\n", ball2.pos.x, ball2.pos.y);
     //printf("pos%4u;%4u; ", ball3[0].pos.x, ball3[0].pos.y);
     //printf("vel%4d;%4d\n", ball3[0].vel.x, ball3[0].vel.y);
 
