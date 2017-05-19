@@ -120,14 +120,6 @@ void *ping(void *arg)
   uint16_t ctr = 0;
   time_t t;
 
-  // Init render 
-  render_init(1);
-
-  // Reset screen with ORANGE 
-  fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
-  render_flip_buffer();
-  fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, white);
-
   // Initialize random generator
   srand((unsigned) 1*time(&t));
 
@@ -144,11 +136,9 @@ void *ping(void *arg)
   while(1) 
   {
     // Draw to back buffer
-    fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
     for (idx=0;idx<N_BALL;idx++)
     {
       update_ball(&(ball[idx]));
-      //draw_ball(&(ball[idx]));
     }
 
     //render_flip_buffer();
@@ -192,7 +182,6 @@ void *pong(void *arg)
     for (idx=0;idx<N_BALL;idx++)
     {
       update_ball(&(ball2[idx]));
-      //draw_ball(&(ball2[idx]));
     }
 
     // Flip buffer
@@ -207,8 +196,6 @@ void *pong(void *arg)
     usleep(1000);
   }
 
-  render_destroy();
-
   return NULL;
 }
 
@@ -221,6 +208,14 @@ void *bing(void *arg)
   time_t t;
   //timestamp_t ts;
   //timestamp_start(&ts);
+
+  // Init render 
+  render_init(1);
+
+  // Reset screen with ORANGE 
+  fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
+  render_flip_buffer();
+  fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, white);
 
   // Initialize random generator
   srand((unsigned) 3*time(&t));
@@ -245,6 +240,7 @@ void *bing(void *arg)
     brd2->pop();
 
     // Draw to back buffer
+    fillrect(0, 0, DVI_WIDTH, DVI_HEIGHT, orange);
     for (idx=0;idx<N_BALL;idx++)
     {
       update_ball(&(ball3[idx]));
